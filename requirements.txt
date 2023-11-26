@@ -1,0 +1,13 @@
+--find-links https://download.pytorch.org/whl/torch_stable.html
+
+torch==1.8.0+cpu
+torchvision==0.9.0+cpu
+pyyaml==5.4.1
+opencv-python
+easydict==1.9
+tqdm==4.60.0
+imageio==2.9.0
+imageio-ffmpeg
+pytorch_fid
+fvcore
+protobuf==3.20.*
