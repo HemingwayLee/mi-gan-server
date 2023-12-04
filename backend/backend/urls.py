@@ -20,10 +20,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('api/show/page/<int:page>/size/<int:size>/', views.display),
-    path('api/insert/', views.init_csv2db),
-    path('api/save/labels/', views.save_labels),
-    path('api/update/<int:id>/', views.update),
-    path('api/cleanup/', views.clean_files_and_db),
-    path('api/freq/word/<int:page>/', views.get_word_count_rank),
+    path('api/list/images/', views.list_images),
+    path('api/predict/', views.predict)
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
