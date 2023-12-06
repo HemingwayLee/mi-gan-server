@@ -11,7 +11,6 @@ import CanvasDraw from "react-canvas-draw";
 
 export default function Dashboard() {
   const [fileList, setFileList] = React.useState([]);
-  const [clickedId, setClickedId] = React.useState(0);
   const [selectedImg, setSelectedImg] = React.useState('');
   const [selectedIdx, setSelectedIdx] = React.useState(0);
   
@@ -42,15 +41,22 @@ export default function Dashboard() {
     }
   }
 
-  const doUpdate = (updatedText) => {
-    fetch(`/api/update/${clickedId}/`, {
+  const onCanvasChange = (e) => {
+    // console.log(e);
+    // console.log(e.getDataURL())
+    // console.log(e.getSaveData());
+
+    const dataUrl = e.getDataURL()
+
+    fetch(`/api/predict/`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
         'X-CSRFToken': Cookies.get('csrftoken'),
       },
       body: JSON.stringify({
-        text: updatedText
+        filename: selectedImg,
+        mask: dataUrl.split(',')[1]
       })
     })
     .then(function(response) {
@@ -64,13 +70,6 @@ export default function Dashboard() {
       // getData();
       // alert(myJson["result"]);
     });
-  }
-
-  const onCanvasChange = (e) => {
-    console.log(e);
-    console.log(e.context);
-    console.log(e.getDataURL())
-    console.log(e.getSaveData());
   }
 
   const handleDropDownChange = (e) => {
@@ -124,10 +123,12 @@ export default function Dashboard() {
                             imgSrc={`media/places2_512_object/images/${selectedImg}`} 
                             hideGridX={true} 
                             hideGridY={true}
-                            brushColor={"#FF0000"}
+                            canvasWidth={330}
+                            canvasHeight={330}
+                            brushColor={"#000000"}
                             onChange={onCanvasChange}/>
                           </td>
-                        <td><img width="400" height="400"/></td>
+                        <td><img width="330" height="330"/></td>
                       </tr>
                     </tbody>
                   </table>
