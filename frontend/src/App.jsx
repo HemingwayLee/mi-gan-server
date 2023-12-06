@@ -67,7 +67,10 @@ export default function Dashboard() {
   }
 
   const onCanvasChange = (e) => {
-    console.log(e)
+    console.log(e);
+    console.log(e.context);
+    console.log(e.getDataURL())
+    console.log(e.getSaveData());
   }
 
   const handleDropDownChange = (e) => {
@@ -77,7 +80,7 @@ export default function Dashboard() {
   
   return (
       <Box sx={{ display: 'flex' }}>
-        <Box
+        {/* <Box
           component="main"
           sx={{
             backgroundColor: '#AAAAAA',
@@ -85,7 +88,7 @@ export default function Dashboard() {
             height: '100vh',
             overflow: 'auto',
           }}
-        >
+        > */}
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
@@ -121,6 +124,7 @@ export default function Dashboard() {
                             imgSrc={`media/places2_512_object/images/${selectedImg}`} 
                             hideGridX={true} 
                             hideGridY={true}
+                            brushColor={"#FF0000"}
                             onChange={onCanvasChange}/>
                           </td>
                         <td><img width="400" height="400"/></td>
@@ -136,7 +140,7 @@ export default function Dashboard() {
               </Grid> */}
             </Grid>
           </Container>
-        </Box>
+        {/* </Box> */}
       </Box>
   );
 }
