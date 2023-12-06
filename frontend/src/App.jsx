@@ -7,12 +7,13 @@ import Paper from '@mui/material/Paper';
 import Cookies from 'js-cookie';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-
+import CanvasDraw from "react-canvas-draw";
 
 export default function Dashboard() {
   const [fileList, setFileList] = React.useState([]);
   const [clickedId, setClickedId] = React.useState(0);
-  const [selectedImg, setSelectedImg] = React.useState(0);
+  const [selectedImg, setSelectedImg] = React.useState('');
+  const [selectedIdx, setSelectedIdx] = React.useState(0);
   
   React.useEffect(() => {
     getData();
@@ -31,6 +32,8 @@ export default function Dashboard() {
             "id": idx
           }
         }));
+        setSelectedIdx(0)
+        setSelectedImg((data.images.length > 0) ? data.images[0] : '' )
       } else {
         throw new Error('Request failed')
       }
@@ -63,8 +66,13 @@ export default function Dashboard() {
     });
   }
 
+  const onCanvasChange = (e) => {
+    console.log(e)
+  }
+
   const handleDropDownChange = (e) => {
-    setSelectedImg(e.target.value);
+    setSelectedIdx(e.target.value);
+    setSelectedImg(fileList.filter(x=>x.id == e.target.value)[0].img);
   }
   
   return (
@@ -85,8 +93,8 @@ export default function Dashboard() {
                   <Select
                     labelId="img-select-label"
                     id="img-select"
-                    value={selectedImg}
-                    label="selectedImg"
+                    value={selectedIdx}
+                    label="selectOption"
                     onChange={handleDropDownChange}
                   >
                     {
@@ -99,9 +107,33 @@ export default function Dashboard() {
               </Grid>
               <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                  <Button variant="contained" component="label">Init database from TRANS.txt</Button>
+                  <table>
+                    <thead>
+                      <tr>
+                        <td>Original</td>
+                        <td>Result</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <CanvasDraw 
+                            imgSrc={`media/places2_512_object/images/${selectedImg}`} 
+                            hideGridX={true} 
+                            hideGridY={true}
+                            onChange={onCanvasChange}/>
+                          </td>
+                        <td><img width="400" height="400"/></td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </Paper>
               </Grid>
+              {/* <Grid item xs={12}>
+                <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+                  <Button variant="contained" component="label">Init database from TRANS.txt</Button>
+                </Paper>
+              </Grid> */}
             </Grid>
           </Container>
         </Box>
