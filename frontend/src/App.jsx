@@ -1,5 +1,5 @@
 import Button from '@mui/material/Button';
-import React from 'react';
+import React, { useRef }  from 'react';
 import Grid from '@mui/material/Grid';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
@@ -13,10 +13,39 @@ export default function Dashboard() {
   const [fileList, setFileList] = React.useState([]);
   const [selectedImg, setSelectedImg] = React.useState('');
   const [selectedIdx, setSelectedIdx] = React.useState(0);
+  const [isResultReady, setResultReady] = React.useState(false);
+  const [res, setRes] = React.useState('');
+  const canvasRef = React.useRef(null);
   
+  const fetchResImage = async () => {
+    const res = await fetch(`media/${selectedImg}`);
+    const imageBlob = await res.blob();
+    const imageObjectURL = URL.createObjectURL(imageBlob);
+    setRes(imageObjectURL);
+    setResultReady(true);
+  };
+
+
   React.useEffect(() => {
     getData();
   }, []);
+
+  const cleanup = () => {
+    fetch(`/api/clean/`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': Cookies.get('csrftoken'),
+      }
+    })
+    .then(function(response) {
+      if (response.status === 200) {
+        console.log(response.json());
+      } else {
+        alert("backend errors")
+      }
+    });
+  }
 
   const getData = async () => {
     const url = `/api/list/images/`
@@ -67,12 +96,17 @@ export default function Dashboard() {
       }
     })
     .then(function(myJson) {
+      fetchResImage()
       // getData();
       // alert(myJson["result"]);
     });
   }
 
   const handleDropDownChange = (e) => {
+    cleanup();
+    canvasRef.current.clear();
+    
+    setResultReady(false);
     setSelectedIdx(e.target.value);
     setSelectedImg(fileList.filter(x=>x.id == e.target.value)[0].img);
   }
@@ -119,7 +153,8 @@ export default function Dashboard() {
                     <tbody>
                       <tr>
                         <td>
-                          <CanvasDraw 
+                          <CanvasDraw
+                            ref={canvasRef} 
                             imgSrc={`media/places2_512_object/images/${selectedImg}`} 
                             hideGridX={true} 
                             hideGridY={true}
@@ -128,7 +163,13 @@ export default function Dashboard() {
                             brushColor={"#000000"}
                             onChange={onCanvasChange}/>
                           </td>
-                        <td><img width="330" height="330"/></td>
+                        <td>
+                          {
+                            isResultReady && (
+                              <img src={res} width="330" height="330"/>
+                            )
+                          }
+                        </td>
                       </tr>
                     </tbody>
                   </table>

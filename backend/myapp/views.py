@@ -1,7 +1,7 @@
 import os
 import json
 import base64
-from PIL import Image
+from PIL import Image, ImageOps
 from io import BytesIO
 from django.http import JsonResponse
 from django.db import connection
@@ -49,6 +49,7 @@ def predict(request):
     
     im = Image.open(BytesIO(base64.b64decode(bytes(body["mask"], "utf-8"))))
     im = _remove_transparency(im)
+    im = im.convert("RGB")
     im.save(f"{settings.MEDIA_ROOT}/tmpMask.png")
 
     main(
@@ -56,7 +57,28 @@ def predict(request):
         model_path=f"{settings.MEDIA_ROOT}/models/migan_256_places2.pt", 
         img_path=f"{settings.MEDIA_ROOT}/places2_512_object/images/{body['filename']}",
         mask_path=f"{settings.MEDIA_ROOT}/tmpMask.png",
-        output_path=f"{settings.MEDIA_ROOT}"
+        output_path=f"{settings.MEDIA_ROOT}",
+        invert=False,
     )
 
+    # Note: Testing
+    # main(
+    #     model_name='migan-256', 
+    #     model_path=f"{settings.MEDIA_ROOT}/models/migan_256_places2.pt", 
+    #     img_path=f"{settings.MEDIA_ROOT}/places2_512_object/images/2.png",
+    #     mask_path=f"{settings.MEDIA_ROOT}/places2_512_object/masks/2.png",
+    #     output_path=f"{settings.MEDIA_ROOT}",
+    #     invert=True,
+    # )
+
     return JsonResponse({"result": "updated!"})
+
+
+@require_http_methods(["POST"])
+def cleanup_results(request):
+    dir_name = f"{settings.MEDIA_ROOT}"
+    for item in os.listdir(dir_name):
+        if item.endswith(".png"):
+            os.remove(os.path.join(dir_name, item))
+
+    return JsonResponse({"result": "removed"})

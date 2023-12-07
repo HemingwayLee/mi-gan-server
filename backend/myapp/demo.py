@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore")
 
 def read_mask(mask_path, invert=False):
     mask = Image.open(mask_path)
+    print(f"mask mode: {mask.mode}")
     mask = resize(mask, max_size=512, interpolation=Image.NEAREST)
     mask = np.array(mask)
     if len(mask.shape) == 3:
@@ -57,7 +58,7 @@ def preprocess(img: Image, mask: Image, resolution: int) -> torch.Tensor:
     return x
 
 
-def main(model_name, model_path, img_path, mask_path, output_path):
+def main(model_name, model_path, img_path, mask_path, output_path, invert):
     if model_name == "migan-256":
         resolution = 256
         model = MIGAN(resolution=256)
@@ -71,8 +72,9 @@ def main(model_name, model_path, img_path, mask_path, output_path):
     model.eval()
 
     img = Image.open(img_path).convert("RGB")
+    print(f"img mode: {img.mode}")
     img_resized = resize(img, max_size=resolution)
-    mask = read_mask(mask_path, invert=False)
+    mask = read_mask(mask_path, invert=invert)
     mask_resized = resize(mask, max_size=resolution, interpolation=Image.NEAREST)
 
     x = preprocess(img_resized, mask_resized, resolution)
