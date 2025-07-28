@@ -25,6 +25,11 @@ else
 fi
 
 
-cd /home/app/
-concurrently "cd /home/app/frontend && npm run start" "cd /home/app/backend && python3 manage.py runserver 0.0.0.0:8000"
+cd /home/app/frontend
+npm run start &
+
+cd /home/app/backend
+python3 manage.py runserver 0.0.0.0:8000
+
+
 
