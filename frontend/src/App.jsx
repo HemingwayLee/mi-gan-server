@@ -20,7 +20,9 @@ export default function Dashboard() {
   const [canvasDim, setcanvasDim] = React.useState({width: 330, height: 330});
   
   const fetchResImage = async () => {
-    const res = await fetch(`media/${selectedImg}`);
+    const lastDotIndex = selectedImg.lastIndexOf('.');
+    const nameWithoutExtension = lastDotIndex === -1 ? selectedImg : selectedImg.slice(0, lastDotIndex);
+    const res = await fetch(`media/${nameWithoutExtension}.png`);
     const imageBlob = await res.blob();
     const imageObjectURL = URL.createObjectURL(imageBlob);
     setRes(imageObjectURL);
