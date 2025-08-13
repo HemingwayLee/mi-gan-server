@@ -36,7 +36,7 @@ def _remove_transparency(im, bg_colour=(255, 255, 255)):
 def list_images(request):
     files = []
     for filename in os.listdir(f"{settings.MEDIA_ROOT}/places2_512_object/images"):
-        if filename.endswith(".png"):
+        if filename.endswith(".png") or filename.endswith(".jpeg") or filename.endswith(".jpg"):
             files.append(filename)
 
     return JsonResponse({"images": files})
@@ -145,10 +145,13 @@ def cleanup_results(request):
 @require_http_methods(["POST"])
 def do_upload(request):
     uploadedFile = request.FILES['myfile'] if 'myfile' in request.FILES else False
+    print(f"the file {uploadedFile}")
     if uploadedFile:
+        print("!!!")
         upload_dir = f"{settings.MEDIA_ROOT}/places2_512_object/images"
         fss = FileSystemStorage(location=upload_dir)
         filename = fss.save(uploadedFile.name, uploadedFile)
+        print(f"save... {filename}")
         return JsonResponse({'filename': filename})
     else:
         return JsonResponse({'filename': None, 'status': None }, status=400)

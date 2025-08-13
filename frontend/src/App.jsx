@@ -15,7 +15,9 @@ export default function Dashboard() {
   const [selectedIdx, setSelectedIdx] = React.useState(0);
   const [isResultReady, setResultReady] = React.useState(false);
   const [res, setRes] = React.useState('');
+
   const canvasRef = React.useRef(null);
+  const [canvasDim, setcanvasDim] = React.useState({width: 330, height: 330});
   
   const fetchResImage = async () => {
     const res = await fetch(`media/${selectedImg}`);
@@ -25,6 +27,52 @@ export default function Dashboard() {
     setResultReady(true);
   };
 
+  const [selectedFile, setSelectedFile] = React.useState(null);
+  const [uploadStatus, setUploadStatus] = React.useState('');
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+    setUploadStatus('');
+  }
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      setUploadStatus('Please select a file first.')
+      return
+    }
+
+    setUploadStatus('Uploading...');
+
+    const formData = new FormData();
+    formData.append('myfile', selectedFile);
+
+    try {
+      const response = await fetch('/api/upload/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': Cookies.get('csrftoken'),
+        },
+      })
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP status ${response.status}`);
+      }
+
+      setUploadStatus('Upload successfully')
+      getData()
+    } catch (error) {
+      setUploadStatus('Upload error!!')
+    }
+  }
+
+  React.useEffect(() => {
+    const img = new Image();
+    img.src = `media/places2_512_object/images/${selectedImg}`
+    img.onload = () => {
+      setcanvasDim({width: img.naturalWidth, height: img.naturalHeight})
+    }
+  }, [selectedImg]);
 
   React.useEffect(() => {
     getData();
@@ -125,6 +173,16 @@ export default function Dashboard() {
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
+                <h2>Image Uploader</h2>
+                <input type="file" accept='image/*' onChange={handleFileChange}/>
+                <button onClick={handleUpload} disabled={!selectedFile}>
+                  Upload Image
+                </button>
+                {
+                  uploadStatus && <p>{uploadStatus}</p>
+                }
+              </Grid>
+              <Grid item xs={12}>
                 <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
                   <Select
                     labelId="img-select-label"
@@ -158,15 +216,20 @@ export default function Dashboard() {
                             imgSrc={`media/places2_512_object/images/${selectedImg}`} 
                             hideGridX={true} 
                             hideGridY={true}
-                            canvasWidth={330}
-                            canvasHeight={330}
+                            canvasWidth={canvasDim.width}
+                            canvasHeight={canvasDim.height}
                             brushColor={"#000000"}
-                            onChange={onCanvasChange}/>
-                          </td>
+                            onChange={onCanvasChange}
+                          />
+                        </td>
                         <td>
                           {
                             isResultReady && (
-                              <img src={res} width="330" height="330"/>
+                              <img 
+                                src={res} 
+                                width={canvasDim.width} 
+                                height={canvasDim.height}
+                              />
                             )
                           }
                         </td>
