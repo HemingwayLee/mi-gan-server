@@ -10,6 +10,8 @@ done
 pwd
 ls
 
+pip3 install django-cors-headers
+
 cd /home/app/backend/
 python3 manage.py makemigrations myapp
 python3 manage.py migrate

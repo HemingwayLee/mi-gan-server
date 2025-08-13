@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 def read_mask(mask_path, invert=False):
     mask = Image.open(mask_path)
     print(f"mask mode: {mask.mode}")
-    mask = resize(mask, max_size=512, interpolation=Image.NEAREST)
+    # mask = resize(mask, max_size=512, interpolation=Image.NEAREST)
     mask = np.array(mask)
     if len(mask.shape) == 3:
         if mask.shape[2] == 4:
@@ -72,10 +72,14 @@ def main(model_name, model_path, img_path, mask_path, output_path, invert):
     model.eval()
 
     img = Image.open(img_path).convert("RGB")
-    print(f"img mode: {img.mode}")
+    img_ori = Image.open(img_path).convert("RGB")
     img_resized = resize(img, max_size=resolution)
     mask = read_mask(mask_path, invert=invert)
+    mask_ori = read_mask(mask_path, invert=invert)
     mask_resized = resize(mask, max_size=resolution, interpolation=Image.NEAREST)
+
+    mask_ori_w, mask_ori_h = mask_ori.size
+    img_ori_w, img_ori_h = img_ori.size
 
     x = preprocess(img_resized, mask_resized, resolution)
     with torch.no_grad():
@@ -84,9 +88,13 @@ def main(model_name, model_path, img_path, mask_path, output_path, invert):
     result_image = (result_image * 0.5 + 0.5).clamp(0, 1) * 255
     result_image = result_image.to(torch.uint8).permute(1, 2, 0).detach().to("cpu").numpy()
 
-    result_image = cv2.resize(result_image, dsize=img_resized.size, interpolation=cv2.INTER_CUBIC)
-    mask_resized = np.array(mask_resized)[:, :, np.newaxis] // 255
-    composed_img = img_resized * mask_resized + result_image * (1 - mask_resized)
+    result_image = cv2.resize(result_image, dsize=img_ori.size, interpolation=cv2.INTER_CUBIC)
+    mask_ori = np.array(mask_ori)[:, :, np.newaxis] // 255
+    
+    composed_img = img_ori * mask_ori + result_image * (1 - mask_ori)
     composed_img = Image.fromarray(composed_img)
-    composed_img.save(f"{output_path}/{Path(img_path).stem}.png")
+    
+    output_filepath = f"{output_path}/{Path(img_path).stem}.png"
+    composed_img.save(output_filepath)
 
+    return output_filepath, composed_img
